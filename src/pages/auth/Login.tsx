@@ -6,6 +6,8 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { login } from "@/services/auth";
 
 export const Login = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +18,7 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -31,17 +34,19 @@ export const Login = () => {
     setSuccess("");
     
     try {
-      
-        //
-      
-    } catch (err) {
+        toast.promise(login(formData),{
+            loading: '...Sign in',
+            success: (res) => res.data.message,
+            error: (err) => err.response.data.message
+        })
+        
+    } catch {
       setError("Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Clear messages after 5 seconds
   useEffect(() => {
     if (error || success) {
       const timer = setTimeout(() => {
@@ -99,75 +104,75 @@ export const Login = () => {
                     </motion.div>
                     )}
                     
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="space-y-2">
-                        <Label htmlFor="username" className="text-sm font-medium text-gray-700">
-                        Username
-                        </Label>
-                        <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <User className="h-5 w-5 text-gray-400" />
+                    <form onSubmit={handleSubmit} className="space-y-5" >
+                        <div className="space-y-2">
+                            <Label htmlFor="username" className="text-sm font-medium text-gray-700">
+                            Username
+                            </Label>
+                            <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <User className="h-5 w-5 text-gray-400" />
+                            </div>
+                                <Input
+                                    id="username"
+                                    name="username"
+                                    type="text"
+                                    placeholder="Enter your username"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    className="pl-10 py-5 rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    required
+                                />
+                            </div>
                         </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                            Password
+                            </Label>
+                            <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Lock className="h-5 w-5 text-gray-400" />
+                            </div>
                             <Input
-                                id="username"
-                                name="username"
-                                type="text"
-                                placeholder="Enter your username"
-                                value={formData.username}
+                                id="password"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                value={formData.password}
                                 onChange={handleChange}
-                                className="pl-10 py-5 rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="pl-10 py-5 rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 pr-10"
                                 required
                             />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? (
+                                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                ) : (
+                                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                )}
+                            </button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                        Password
-                        </Label>
-                        <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <Input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="pl-10 py-5 rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 pr-10"
-                            required
-                        />
-                        <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                            onClick={() => setShowPassword(!showPassword)}
+                        
+                        
+                        <Button
+                            type="submit"
+                            className="w-full py-6 cursor-pointer rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
+                            disabled={isLoading}
                         >
-                            {showPassword ? (
-                            <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Signing in...
+                            </>
                             ) : (
-                            <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            "Sign In"
                             )}
-                        </button>
-                        </div>
-                    </div>
-                    
-                    
-                    <Button
-                        type="submit"
-                        className="w-full py-6 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Signing in...
-                        </>
-                        ) : (
-                        "Sign In"
-                        )}
-                    </Button>
+                        </Button>
                     </form>
                 </CardContent>
                 

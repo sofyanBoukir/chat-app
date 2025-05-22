@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
+import { Link } from "react-router-dom";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -27,7 +27,6 @@ export const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState("");
@@ -62,10 +61,7 @@ export const Register = () => {
         result.error.errors.forEach(err => {
           fieldErrors[err.path[0]] = err.message;
         });
-        
-        if (!acceptTerms) {
-          fieldErrors.terms = "You must accept the terms and conditions";
-        }
+    
         
         setErrors(fieldErrors);
         return;
@@ -84,7 +80,7 @@ export const Register = () => {
         confirmPassword: ""
       });
       
-    } catch (err) {
+    } catch {
       setErrors({ server: "Registration failed. Please try again later." });
     } finally {
       setIsLoading(false);
@@ -115,7 +111,6 @@ export const Register = () => {
       >
         <Card className="shadow-xl rounded-2xl border-0 bg-white/90 backdrop-blur-sm overflow-hidden">
           <CardHeader className="relative p-0">
-            <div className="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-full"></div>
             <div className="p-6 pb-0">
               <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
                 Create Account
@@ -268,26 +263,10 @@ export const Register = () => {
                 )}
               </div>
               
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={acceptTerms}
-                  onCheckedChange={() => setAcceptTerms(!acceptTerms)}
-                  className={`mt-1 ${errors.terms ? "border-red-500" : ""}`}
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <Label htmlFor="terms" className="text-sm text-gray-600">
-                    I accept the <a href="#" className="text-indigo-600 hover:underline">Terms and Conditions</a>
-                  </Label>
-                  {errors.terms && (
-                    <p className="text-red-500 text-xs">{errors.terms}</p>
-                  )}
-                </div>
-              </div>
               
               <Button
                 type="submit"
-                className="w-full py-6 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
+                className="w-full py-6 cursor-pointer rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -305,18 +284,13 @@ export const Register = () => {
           <CardFooter className="p-6 pt-0">
             <div className="text-center text-sm text-gray-500 w-full">
               Already have an account?{" "}
-              <a href="#" className="text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+              <Link to={'/login'} className="text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
                 Sign in
-              </a>
+              </Link>
             </div>
           </CardFooter>
         </Card>
-        
-        <div className="mt-6 text-center text-xs text-gray-400">
-          Protected by reCAPTCHA and subject to our{" "}
-          <a href="#" className="hover:underline">Privacy Policy</a> and{" "}
-          <a href="#" className="hover:underline">Terms of Service</a>.
-        </div>
+
       </motion.div>
     </div>
   );
