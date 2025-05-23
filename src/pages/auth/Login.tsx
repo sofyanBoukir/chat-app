@@ -5,12 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { login } from "@/services/auth";
+import { useDispatch } from "react-redux";
+import { type LoginForm } from "@/interfaces";
 
 export const Login = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LoginForm>({
     username: "",
     password: ""
   });
@@ -18,7 +20,8 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -36,7 +39,10 @@ export const Login = () => {
     try {
         toast.promise(login(formData),{
             loading: '...Sign in',
-            success: (res) => res.data.message,
+            success: (res) => {
+
+                return res.data.message
+            },
             error: (err) => err.response.data.message
         })
         
