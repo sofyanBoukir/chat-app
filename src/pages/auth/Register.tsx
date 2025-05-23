@@ -104,31 +104,31 @@ export const Register = () => {
   }, [errors.server, success]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="shadow-xl rounded-2xl border-0 bg-white/90 backdrop-blur-sm overflow-hidden">
+        <Card className="shadow-xl rounded-2xl border-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden">
           <CardHeader className="relative p-0">
             <div className="p-6 pb-0">
-              <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+              <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-2">
                 Create Account
               </h2>
-              <p className="text-sm text-center text-gray-500">
+              <p className="text-sm text-center text-gray-500 dark:text-gray-400">
                 Join us today to get started
               </p>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-6">
             {errors.server && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center"
+                className="mb-4 p-3 bg-red-50 dark:bg-red-950 text-red-600 text-sm rounded-lg flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -136,12 +136,12 @@ export const Register = () => {
                 {errors.server}
               </motion.div>
             )}
-            
+
             {success && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded-lg flex items-center"
+                className="mb-4 p-3 bg-green-50 dark:bg-green-900 text-green-600 text-sm rounded-lg flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -149,10 +149,10 @@ export const Register = () => {
                 {success}
               </motion.div>
             )}
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Full Name
                 </Label>
                 <div className="relative">
@@ -166,16 +166,14 @@ export const Register = () => {
                     placeholder="Enter your full name"
                     value={formData.name}
                     onChange={handleChange}
-                    className={`pl-10 py-5 rounded-lg ${errors.name ? "border-red-500" : "border-gray-300"} focus:ring-2 focus:ring-indigo-500`}
+                    className={`pl-10 py-5 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white border ${errors.name ? "border-red-500" : "border-gray-300 dark:border-gray-700"} focus:ring-2 focus:ring-indigo-500`}
                   />
                 </div>
-                {errors.name && (
-                  <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-                )}
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="username" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Username
                 </Label>
                 <div className="relative">
@@ -189,16 +187,14 @@ export const Register = () => {
                     placeholder="Choose a username"
                     value={formData.username}
                     onChange={handleChange}
-                    className={`pl-10 py-5 rounded-lg ${errors.username ? "border-red-500" : "border-gray-300"} focus:ring-2 focus:ring-indigo-500`}
+                    className={`pl-10 py-5 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white border ${errors.username ? "border-red-500" : "border-gray-300 dark:border-gray-700"} focus:ring-2 focus:ring-indigo-500`}
                   />
                 </div>
-                {errors.username && (
-                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
-                )}
+                {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Password
                 </Label>
                 <div className="relative">
@@ -212,27 +208,21 @@ export const Register = () => {
                     placeholder="Create a password"
                     value={formData.password}
                     onChange={handleChange}
-                    className={`pl-10 py-5 rounded-lg ${errors.password ? "border-red-500" : "border-gray-300"} focus:ring-2 focus:ring-indigo-500 pr-10`}
+                    className={`pl-10 py-5 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white border ${errors.password ? "border-red-500" : "border-gray-300 dark:border-gray-700"} focus:ring-2 focus:ring-indigo-500 pr-10`}
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    )}
+                    {showPassword ? <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" /> : <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />}
                   </button>
                 </div>
-                {errors.password && (
-                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-                )}
+                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Confirm Password
                 </Label>
                 <div className="relative">
@@ -246,26 +236,19 @@ export const Register = () => {
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className={`pl-10 py-5 rounded-lg ${errors.confirmPassword ? "border-red-500" : "border-gray-300"} focus:ring-2 focus:ring-indigo-500 pr-10`}
+                    className={`pl-10 py-5 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white border ${errors.confirmPassword ? "border-red-500" : "border-gray-300 dark:border-gray-700"} focus:ring-2 focus:ring-indigo-500 pr-10`}
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    )}
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" /> : <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />}
                   </button>
                 </div>
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
-                )}
+                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
-              
-              
+
               <Button
                 type="submit"
                 className="w-full py-6 cursor-pointer rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
@@ -282,18 +265,18 @@ export const Register = () => {
               </Button>
             </form>
           </CardContent>
-          
+
           <CardFooter className="p-6 pt-0">
-            <div className="text-center text-sm text-gray-500 w-full">
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400 w-full">
               Already have an account?{" "}
-              <Link to={'/login'} className="text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+              <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium hover:underline">
                 Sign in
               </Link>
             </div>
           </CardFooter>
         </Card>
-
       </motion.div>
     </div>
+
   );
 };

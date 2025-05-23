@@ -1,11 +1,11 @@
-export interface LoginForm {
-    username: string,
-    password: string,
+export interface UserData {
+    name: string,
+    username: string, 
+    profile_picture?: string,
+    createdAt: string, 
+    updatedAt: string,
 }
 
-export interface RegisterForm extends LoginForm {
-    name: string,
-}
 
 export interface UpdateProfileForm {
     name: string,

@@ -12,8 +12,6 @@ export const register = async (formData: RegisterForm) =>{
 }
 
 export const isAuthenticated = async () =>{
-    const response = await api.post(`/api/auth/isAuth`,);
-    console.log(response);
-    
+    const response = await api.post(`/api/auth/isAuth`);    
     return response;
 }

@@ -4,7 +4,10 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export interface IsAuthenticatedRequest extends Request{
-    user?: any, 
+    user?: any,
+    file?:{
+        filename: string,
+    }
 }
 
 const JWT_SECRET = process.env.JWT_SECRET;

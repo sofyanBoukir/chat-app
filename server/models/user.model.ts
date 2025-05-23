@@ -1,6 +1,9 @@
-import mongoose, { models, Schema } from "mongoose";
+import mongoose, { Document, models, Schema } from "mongoose";
+import dotenv from 'dotenv'
 
-interface UserI {
+dotenv.config();
+
+export interface UserI extends Document{
     name: string, 
     username: string,
     password: string,
@@ -16,6 +19,15 @@ const userSchema = new Schema<UserI>({
 },{
     timestamps: true
 })
+
+userSchema.virtual('profilePictureUrl').get(function () {
+    if (!this.profile_picture) return null;
+  
+    return `${process.env.BASE_URL || 'http://localhost:5000'}${this.profile_picture}`;
+  });
+  
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 
 const User = models.User || mongoose.model<UserI>('User',userSchema)
 export default User;
