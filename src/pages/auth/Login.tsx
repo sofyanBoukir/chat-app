@@ -6,62 +6,55 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { login } from "@/services/auth";
-import { useDispatch } from "react-redux";
 import { type LoginForm } from "@/interfaces";
 
 export const Login = () => {
-  const [formData, setFormData] = useState<LoginForm>({
-    username: "",
-    password: ""
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+    const [formData, setFormData] = useState<LoginForm>({
+        username: "",
+        password: ""
     });
-  };
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    setSuccess("");
-    
-    try {
-        toast.promise(login(formData),{
-            loading: '...Sign in',
-            success: (res) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
 
-                return res.data.message
-            },
-            error: (err) => err.response.data.message
-        })
-        
-    } catch {
-      setError("Invalid credentials. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (error || success) {
-      const timer = setTimeout(() => {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
         setError("");
         setSuccess("");
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, success]);
+        
+        try {
+            const response = await login(formData);
+            if(response.status === 200){
+                navigate('/home');
+            }
+
+        } catch {
+            setError("Invalid credentials. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (error || success) {
+            const timer = setTimeout(() => {
+                setError("");
+                setSuccess("");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error, success]);
 
   return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-4">

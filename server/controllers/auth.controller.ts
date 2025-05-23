@@ -83,10 +83,13 @@ export const login = async (request: Request, response: Response) =>{
     }
 }
 
-export const me = (request: IsAuthenticatedRequest,response: Response) =>{
+export const me = async (request: IsAuthenticatedRequest,response: Response) =>{
     try {
         const userData = request.user;
-        return response.status(200).json({ user: userData });
+        const user = await User.findById(userData.id);
+        const userToObject = user.toObject();
+        delete userToObject.password;
+        return response.status(200).json({ user: userToObject });
     } catch {
         return response.status(500).json({ 
             message: 'Server error' 

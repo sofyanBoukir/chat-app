@@ -1,12 +1,13 @@
+import { Header } from "@/components/Header";
 import { useSelector } from "react-redux"
 
 export const Home = () => {
-    const userData = useSelector(data => data)
-    console.log(userData);
-    
+    const userData = useSelector(data => data);
+        
     return (
         <div>
-            <h1 className="text-2xl font-semibold">Welcome to home page</h1>
+            <Header />
+            <h1 className="text-2xl font-semibold">Welcome to home page {userData?.name}</h1>
         </div>
     )
 }
