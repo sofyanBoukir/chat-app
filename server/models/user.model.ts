@@ -8,6 +8,7 @@ export interface UserI extends Document{
     username: string,
     password: string,
     profile_picture?: string,
+    status?: 'online' | 'offline' | 'typing'
 }
 
 
@@ -15,7 +16,8 @@ const userSchema = new Schema<UserI>({
     name: {type: String, required: true, max: 50,},
     username: {type: String, unique: true, required: true, max: 20},
     password: {type: String, required: true},
-    profile_picture: {type: String}
+    profile_picture: {type: String},
+    status: {type: String, enum: ['online','offline','typing']}
 },{
     timestamps: true
 })
