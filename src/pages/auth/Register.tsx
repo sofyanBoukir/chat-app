@@ -6,7 +6,9 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { z } from "zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { register } from "@/services/auth";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -30,6 +32,7 @@ export const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,18 +70,17 @@ export const Register = () => {
         return;
       }
       
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      
-      setSuccess("Registration successful! Redirecting to login...");
-      console.log("Registration data:", formData);
-      
-      setFormData({
-        name: "",
-        username: "",
-        password: "",
-        confirmPassword: ""
-      });
+      toast.promise(register(formData),{
+        loading: '...Signing up',
+        success: (res) => {
+          setSuccess("Registration successful! Redirecting to login...");
+          setInterval(() => {
+            navigate('/login')
+          }, 3000);
+          return res.data.message
+        },
+        error: (err) => err.response.data.message
+      })
       
     } catch {
       setErrors({ server: "Registration failed. Please try again later." });

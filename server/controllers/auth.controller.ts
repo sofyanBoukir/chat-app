@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
+import { IsAuthenticatedRequest } from "../isAuth.middleware";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -79,5 +80,16 @@ export const login = async (request: Request, response: Response) =>{
         return response.status(500).json({
             'message' : 'Internal server error'
         })
+    }
+}
+
+export const me = (request: IsAuthenticatedRequest,response: Response) =>{
+    try {
+        const userData = request.user;
+        return response.status(200).json({ user: userData });
+    } catch {
+        return response.status(500).json({ 
+            message: 'Server error' 
+        });
     }
 }

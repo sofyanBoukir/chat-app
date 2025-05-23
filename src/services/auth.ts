@@ -9,4 +9,11 @@ export const login = async (formData: LoginForm) =>{
 export const register = async (formData: RegisterForm) =>{
     const response = await api.post(`/api/auth/register`,formData);
     return response;
-}   
+}
+
+export const isAuthenticated = async () =>{
+    const response = await api.post(`/api/auth/isAuth`,);
+    console.log(response);
+    
+    return response;
+}
