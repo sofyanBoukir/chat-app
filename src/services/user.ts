@@ -9,3 +9,8 @@ export const updateProfile = async (formData) =>{
     });
     return response
 }
+
+export const searchByQuery  = async (query: string) =>{
+    const response = await api.get(`/api/user/searchUsers?query=${query}`);
+    return response
+}

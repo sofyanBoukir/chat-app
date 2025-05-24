@@ -4,5 +4,5 @@ import { getConversations, startNew } from '../controllers/conversation.controll
 
 const router = Router();
 router.get('/get',isAuthenticated, getConversations);
-router.post('startNew', isAuthenticated, startNew);
+router.post('/startNew', isAuthenticated, startNew);
 export default router;

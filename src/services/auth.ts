@@ -15,3 +15,8 @@ export const isAuthenticated = async () =>{
     const response = await api.post(`/api/auth/isAuth`);    
     return response;
 }
+
+export const logout = async () =>{
+    const response = await api.post(`/api/auth/logout`);
+    return response;
+}

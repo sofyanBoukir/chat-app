@@ -14,7 +14,7 @@ import { Loading } from '@/components/ui/Loading';
 import socket from '@/socket';
 import { useSelector } from 'react-redux';
 import { Header } from '@/components/Header';
-
+import defaultImage from '../../../public/userd_Image.webp'
 export default function Home() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [filteredConversations,setFilteredConversations] = useState<Conversation[]>([])
@@ -134,7 +134,6 @@ export default function Home() {
     
 
     useEffect(() => {
-    //   markMessagesAsRead(selectedConversationRef?.current?._id)
       const fetchMessages = async () => {
         if (!selectedConversation) return;
         socket.emit("join_conversation", selectedConversation?._id);
@@ -230,18 +229,19 @@ export default function Home() {
                             onClick={() => setSelectedConversation(conv)}
                         >
                             <Avatar className="w-12 h-12 shadow-md ring-2 ring-blue-300 dark:ring-blue-600">
-                            {participant?.profile_picture ? (
-                                <img
-                                src={participant.profile_picture}
-                                alt="User profile"
-                                width={100}
-                                height={100}
-                                />
-                            ) : (
-                                <div className={`${participant?.defaultColor} text-xl w-12 h-12 text-white rounded-full flex justify-center items-center`}>
-                                {participant?.username.charAt(0)}
-                                </div>
-                            )}
+                                {
+                                    participant.profilePictureUrl ? 
+                                        <img
+                                            src={participant.profilePictureUrl}
+                                            alt="Profile"
+                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
+                                        />
+                                    : <img
+                                            src={defaultImage}
+                                            alt="Profile"
+                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
+                                        />
+                                }
                             </Avatar>
                             <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-center">
@@ -260,6 +260,11 @@ export default function Home() {
                         <h1 className='text-xl mt-2 ml-2'>Loading your conversations...</h1>
                         :null
                     }
+                    {
+                        conversations.length === 0 && !loadConvs &&(
+                            <h1 className='text-xl mt-2 ml-2'>Loading your conversations...</h1>
+                        )
+                    }
                     </div>
                 </div>
 
@@ -269,18 +274,19 @@ export default function Home() {
                         <div className="flex items-center justify-between w-full border-b border-gray-200 dark:border-gray-800 p-4">
                         <div className='flex gap-4'>
                             <Avatar className="w-12 h-12 shadow-md ring-2 ring-blue-300 dark:ring-blue-600">
-                            {otherParticipant?.profile_picture ? (
-                                <img
-                                src={otherParticipant.profile_picture}
-                                alt="User profile"
-                                width={100}
-                                height={100}
-                                />
-                            ) : (
-                                <div className={`${otherParticipant?.defaultColor} text-xl w-12 h-12 text-white rounded-full flex justify-center items-center`}>
-                                {otherParticipant?.username.charAt(0)}
-                                </div>
-                            )}
+                                {
+                                    otherParticipant?.profilePictureUrl ? 
+                                        <img
+                                            src={otherParticipant.profilePictureUrl}
+                                            alt="Profile"
+                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
+                                        />
+                                    : <img
+                                            src={defaultImage}
+                                            alt="Profile"
+                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
+                                        />
+                                }
                             </Avatar>
 
                             <div className="flex-1">
@@ -303,7 +309,7 @@ export default function Home() {
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-950 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] dark:bg-[url('https://www.transparenttextures.com/patterns/dark-cubes.png')] bg-opacity-5 custom-scrollbar">
                         {messages.map((msg) => {
-                            const isOwnMessage = msg.sender._id === session?.user.id;
+                            const isOwnMessage = msg.sender._id === userData.id;
 
                             return (
                             <div
@@ -315,32 +321,32 @@ export default function Home() {
                             >
                                 <div
                                 className={cn(
-                                    'relative max-w-sm p-4 rounded-2xl shadow transition-all duration-200',
+                                    'relative max-w-xl p-4 rounded-2xl shadow transition-all duration-200',
                                     !isOwnMessage
                                     ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none'
                                     : 'bg-blue-600 text-white rounded-tr-none'
                                 )}
                                 >
-                                {isOwnMessage && (
-                                    <button
-                                    onClick={() => deleteMessage(msg._id)}
-                                    className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow cursor-pointer"
-                                    title="Delete message"
-                                    >
-                                    <Trash2 className="w-4 h-4" />
-                                    </button>
-                                )}
-
-                                <p className="leading-relaxed break-words">{msg.text}</p>
-
-                                <div
-                                    className={cn(
-                                    'text-xs mt-2 opacity-70',
-                                    !isOwnMessage ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'
+                                    {isOwnMessage && (
+                                        <button
+                                        onClick={() => deleteMessage(msg._id)}
+                                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow cursor-pointer"
+                                        title="Delete message"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     )}
-                                >
-                                    {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
-                                </div>
+
+                                    <p className="leading-relaxed break-words">{msg.text}</p>
+
+                                    <div
+                                        className={cn(
+                                        'text-xs mt-2 opacity-70',
+                                        !isOwnMessage ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'
+                                        )}
+                                    >
+                                        {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                                    </div>
                                 </div>
                             </div>
                             );

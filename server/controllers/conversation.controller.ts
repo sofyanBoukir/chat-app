@@ -41,6 +41,13 @@ export const startNew = async (request: IsAuthenticatedRequest, response: Respon
             })
         }
 
+        const convExists = await Conversation.findOne({participants:{$all:[userId,otherPaticipantId]}});
+        if(convExists){
+            return response.status(400).json({
+                message: "You are already in contact with this user"
+            })
+        }
+
         const newConversation = new Conversation({
             participants: [userId, otherPaticipantId],
             lastMessage: `Hi ${user.name}!`
@@ -58,7 +65,9 @@ export const startNew = async (request: IsAuthenticatedRequest, response: Respon
         return response.json({
             message: "Your message has been sent successfully!"
         })
-    }catch{
+    }catch(error){
+        console.log(error);
+        
         return response.status(500).json({
             message: "Failed to start new conversation"
         })

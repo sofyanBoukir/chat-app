@@ -5,6 +5,42 @@ import bcrypt from 'bcrypt'
 import path from "path"
 import fs from 'fs'
 
+export const searchUsers = async (request: IsAuthenticatedRequest, response: Response) => {
+    try {
+        const userId: string = request.user.id;
+        const { query } = request.query;
+    
+        if (!query || typeof query !== 'string') {
+                return response.status(400).json({
+                message: 'Query is required and must be a string',
+                });
+        }
+    
+        const users = await User.find(
+            {
+                _id: { $ne: userId },
+                $or: [
+                    { name: { $regex: query, $options: 'i' } },
+                    { username: { $regex: query, $options: 'i' } },
+                ],
+            },
+            {
+                password: 0, 
+            }
+        );
+    
+        return response.status(200).json({
+            users
+        });
+    } catch {
+        
+        return response.status(500).json({
+            message: 'Failed to search users',
+        });
+    }
+  };
+
+
 export const updateUserData = async (request: IsAuthenticatedRequest, response: Response) =>{
     try{
         const { username, name, oldPassword, newPassword } = request.body;
@@ -57,8 +93,7 @@ export const updateUserData = async (request: IsAuthenticatedRequest, response: 
         await user.save();
 
         return response.json({ message: 'Profile data updated successfully' });
-    }catch(error){
-        console.log(error)
+    }catch{
         return response.status(500).json({ 
             message: 'Failed to updated userdata' 
         });

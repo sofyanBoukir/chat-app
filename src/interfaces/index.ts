@@ -31,3 +31,12 @@ export interface Message {
     isRead?: boolean,
     createdAt: Date
 }
+
+export interface UserData{
+    _id: string,
+    name: string, 
+    username: string,
+    password: string,
+    profile_picture?: string,
+    profilePictureUrl?: string,
+}
