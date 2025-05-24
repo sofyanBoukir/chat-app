@@ -15,3 +15,19 @@ export interface UpdateProfileForm {
     retypePassword?: string,
     oldPassword?: string,
 }
+
+export interface Conversation {
+    _id: string,
+    participants : any[],
+    lastMessage: string,
+    updatedAt: string,
+    api: any
+}
+
+export interface Message {
+    _id: string, 
+    sender: any,
+    text: string,
+    isRead?: boolean,
+    createdAt: Date
+}
