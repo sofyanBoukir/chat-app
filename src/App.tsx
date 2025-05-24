@@ -3,8 +3,8 @@ import { Login } from "./pages/auth/Login"
 import { Register } from "./pages/auth/Register"
 import { Toaster } from "./components/ui/sonner"
 import { IsAuth } from "./funcs/IsAuth"
-import { Home } from "./pages/main/Home"
 import { ThemeProvider } from "./components/ui/theme-provider"
+import Home from "./pages/main/Home"
 
 export const App = () => {
     return (

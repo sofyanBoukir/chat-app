@@ -8,6 +8,9 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
+import mssgRoutes from './routes/message.route';
+import convRoutes from './routes/conversation.route';
+
 import { dbConnection } from './db';
 
 dotenv.config();
@@ -35,6 +38,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/conversation', convRoutes);
+app.use('/api/message', mssgRoutes);
 
 io.on('connection', (socket: Socket) => {
     console.log(`Socket connected: ${socket.id}`);
