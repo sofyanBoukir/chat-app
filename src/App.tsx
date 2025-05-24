@@ -4,6 +4,8 @@ import { Register } from "./pages/auth/Register"
 import { Toaster } from "./components/ui/sonner"
 import { IsAuth } from "./funcs/IsAuth"
 import { ThemeProvider } from "./components/ui/theme-provider"
+import { NotFound } from "./pages/error/NotFound"
+import Inbox from "./pages/main/Inbox"
 import Home from "./pages/main/Home"
 
 export const App = () => {
@@ -13,10 +15,12 @@ export const App = () => {
                 <Toaster />
                 <Routes>
                     <Route element={<IsAuth />}>
-                        <Route path="/home" element={<Home />} />   
+                        <Route path="/home" element={<Inbox />} />   
                     </Route>
+                    <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </ThemeProvider>
         </>

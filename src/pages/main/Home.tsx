@@ -1,386 +1,242 @@
-
-import { useEffect, useRef, useState } from 'react';
-import { getConvs } from '@/services/conversation';
-import { _getMessages,_sendMessage,_deleteMessage } from '@/services/message';
-import { toast } from 'sonner';
-import { type Conversation, type Message } from '@/interfaces';
-import { Input } from '@/components/ui/input';
+import { MessageCircle, Search, User, ArrowRight, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar } from '@/components/ui/avatar';
-import { Search, Send, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { Loading } from '@/components/ui/Loading';
-import socket from '@/socket';
-import { useSelector } from 'react-redux';
-import { Header } from '@/components/Header';
-import defaultImage from '../../../public/userd_Image.webp'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { ModeToggle } from '@/components/ui/mode-toggle';
+import appLogo from '../../../public/chatLogo.png'
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { isAuthenticated } from '@/services/auth';
+import { Link } from 'react-router-dom';
+import { UpdateForm } from '@/components/UpdateForm';
+
 export default function Home() {
-    const [conversations, setConversations] = useState<Conversation[]>([]);
-    const [filteredConversations,setFilteredConversations] = useState<Conversation[]>([])
-    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [otherParticipant,setOtherParticipant] = useState<UserI>();
-    const [query,setQuery] = useState<string>('')
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const conversationsToShow = query ? filteredConversations : conversations;
-    const selectedConversationRef = useRef<Conversation | null>(null);
-    const [loadConvs,setLoadConvs] = useState<boolean>(true);
-    const [loadMssgs,setLoadMssgs] = useState<boolean>(false);
+    const [loading,setLoading] = useState(true);
+    const [isAuth,setIsAuth] = useState(false);
+    const dispatch = useDispatch();
     const userData = useSelector(data => data);
-
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    const sendMessage = async () => {
-      if (!newMessage.trim()) return;
-      const newMsg: Message = {
-        _id: String(Date.now()),
-        text: newMessage,
-        conversationId: selectedConversation?._id,
-        sender: { _id: userData.id },
-        createdAt: new Date(),
-      };
-
-      try {
-        await _sendMessage(selectedConversation._id, newMessage);
-        socket.emit("send_message", {
-          conversationId: selectedConversation?._id,
-          message: newMsg,
-        });
-        setConversations((prev) => {
-          const updatedConversation = {
-            ...selectedConversation,
-            lastMessage: newMessage,
-            updatedAt: new Date().toISOString(),
-          };
     
-          const filtered = prev.filter((c) => c._id !== selectedConversation._id);
-          return [updatedConversation, ...filtered];
-        });
-    
-      } catch {
-        toast.error('Failed to send message');
-      }      
-      setNewMessage('');
-    };
-
-    const deleteMessage = (messageId: string) =>{
-      try{
-        toast.promise(_deleteMessage(messageId),{
-          loading: '...Deleting message',
-          success: (res) => {
-            const newMessages = messages.filter((message) => message._id !== messageId);
-            setMessages(newMessages)
-            return res.data.message
-          },
-          error: (err) => err.response.data.message
-        })
-
-      }catch{
-        toast.error('Operation failed',{
-          description: 'Failed to delete message'
-        })
-      }
+    const checkIsUserAuth = async () =>{
+        try{
+            const response = await isAuthenticated();
+            setLoading(false);
+            if(response.status === 200){
+                setIsAuth(true)
+                dispatch({type:'UPDATE_USERDATA',payload:response.data.user})
+            }
+        }catch{
+            setIsAuth(false)
+        }finally{
+            setLoading(false)
+        }
     }
-
-    useEffect(() => {
-      const fetchConversations = async () => {
-        try {
-          setLoadConvs(true)
-          const response = await getConvs();
-          if (response.status === 200) {
-            setConversations(response.data.conversations);
-            const first = response.data.conversations[0];
-            setSelectedConversation(first);
-          }
-        } catch {
-          toast.error('Operation failed', {
-            description: 'Failed to load your conversations',
-          });
-        }finally{
-          setLoadConvs(false);
-        }
-      };
-      fetchConversations();
-    }, []);
-
-    useEffect(() => {
-      const searchConv = () => {
-        const lowerTerm = query.toLowerCase();
     
-        return conversations.filter((conversation) => {
-          const otherParticipant = conversation.participants.find(
-            (p) => p._id !== userData.id
-          );
-          if (!otherParticipant) return false;
-    
-          return (
-            otherParticipant.name?.toLowerCase().includes(lowerTerm) ||
-            otherParticipant.username?.toLowerCase().includes(lowerTerm)
-          );
-        });
-      };
-    
-      if (query !== '') {
-        const results = searchConv();
-        setFilteredConversations(results);
-      } else {
-        setFilteredConversations(conversations);
-      }
-    }, [query, conversations, userData.id]);
-    
-
-    useEffect(() => {
-      const fetchMessages = async () => {
-        if (!selectedConversation) return;
-        socket.emit("join_conversation", selectedConversation?._id);
-
-        try {
-          setLoadMssgs(true);
-          const response = await _getMessages(selectedConversation._id);
-          
-          if (response.status === 200) {
-            setMessages(response.data.messages);
-          }
-        } catch {
-          toast.error('Operation failed', {
-            description: 'Failed to load your messages',
-          });
-        }finally{
-          setLoadMssgs(false);
-        }
-      };
-      fetchMessages();
-    }, [selectedConversation]);
-
     useEffect(() =>{
-        setOtherParticipant(selectedConversation?.participants.find((p) => p._id !== userData.id))
-    },[selectedConversation,userData.id])    
-
-    useEffect(() => {
-      selectedConversationRef.current = selectedConversation;
-    }, [selectedConversation]);
-  
-    useEffect(() => {
-      
-      const handler = (message: Message) => {
-        if (selectedConversationRef.current?._id === message.conversationId) {
-          setMessages((prev) => [...prev, message])
-        }
+        checkIsUserAuth();
+    },[])
     
-        setConversations((prevConversations) => {
-          const index = prevConversations.findIndex(c => c._id === message.conversationId);
-          if (index === -1) return prevConversations;
-    
-          const updated = [...prevConversations];
-          const target = updated.splice(index, 1)[0];
-          target.lastMessage = message.text;
-          target.updatedAt = new Date().toISOString();
-    
-          return [target, ...updated];
-        });
-      };
-    
-      socket.on("new_message", handler);
-
-      return () => {
-        socket.off("new_message");
-      };
-    }, []);
-
-    useEffect(() => {
-      scrollToBottom();
-    }, [messages]);
-
-    if(status === 'loading') return <Loading />
-
     return (
-        <>
-            <Header />
-            <div className="flex h-[90vh] bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100">
-                <div className="w-1/3 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col">
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-                    <h2 className="text-2xl font-bold">Messages</h2>
-                    <div className="relative mt-4">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                        placeholder="Search conversations..."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        className="pl-10 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border-none focus:ring-2 focus:ring-blue-500 transition"
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100">
+            <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                    <img 
+                        src={appLogo} 
+                        alt="App Logo" 
+                        width={144} 
+                        height={64} 
+                        className="cursor-pointer" 
                         />
-                    </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    {conversationsToShow.map((conv) => {
-                        const participant = conv.participants.find((p) => p._id !== userData.id);
-
-                        return (
-                        <div
-                            key={conv._id}
-                            className={cn(
-                            'flex items-center p-4 gap-3 cursor-pointer transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20',
-                            selectedConversation?._id === conv._id && 'bg-blue-100/30 dark:bg-blue-800/30 border-l-4 border-blue-500'
-                            )}
-                            onClick={() => setSelectedConversation(conv)}
-                        >
-                            <Avatar className="w-12 h-12 shadow-md ring-2 ring-blue-300 dark:ring-blue-600">
-                                {
-                                    participant.profilePictureUrl ? 
-                                        <img
-                                            src={participant.profilePictureUrl}
-                                            alt="Profile"
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                    : <img
-                                            src={defaultImage}
-                                            alt="Profile"
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                }
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                                <h3 className="font-semibold truncate">{participant?.name}</h3>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {formatDistanceToNow(new Date(conv.updatedAt), { addSuffix: true })}
-                                </span>
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{conv.lastMessage}</div>
-                            </div>
-                        </div>
-                        );
-                    })}
-                    {
-                        loadConvs ?
-                        <h1 className='text-xl mt-2 ml-2'>Loading your conversations...</h1>
-                        :null
-                    }
-                    {
-                        conversations.length === 0 && !loadConvs &&(
-                            <h1 className='text-xl mt-2 ml-2'>Loading your conversations...</h1>
-                        )
-                    }
-                    </div>
                 </div>
-
-                <div className="w-2/3 flex flex-col">
-                    {selectedConversation && (
-                    <>
-                        <div className="flex items-center justify-between w-full border-b border-gray-200 dark:border-gray-800 p-4">
-                        <div className='flex gap-4'>
-                            <Avatar className="w-12 h-12 shadow-md ring-2 ring-blue-300 dark:ring-blue-600">
-                                {
-                                    otherParticipant?.profilePictureUrl ? 
-                                        <img
-                                            src={otherParticipant.profilePictureUrl}
-                                            alt="Profile"
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                    : <img
-                                            src={defaultImage}
-                                            alt="Profile"
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                }
-                            </Avatar>
-
-                            <div className="flex-1">
-                            <div className="font-semibold text-lg">
-                                <span>
-                                {otherParticipant?.name}
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                Last active{' '}
-                                {selectedConversation?.updatedAt
-                                ? formatDistanceToNow(new Date(selectedConversation.updatedAt), {
-                                    addSuffix: true,
-                                    })
-                                : 'unknown'}
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-950 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] dark:bg-[url('https://www.transparenttextures.com/patterns/dark-cubes.png')] bg-opacity-5 custom-scrollbar">
-                        {messages.map((msg) => {
-                            const isOwnMessage = msg.sender._id === userData.id;
-
-                            return (
-                            <div
-                                key={msg._id}
-                                className={cn(
-                                'flex transition-all duration-200 group',
-                                !isOwnMessage ? 'justify-start' : 'justify-end'
-                                )}
-                            >
-                                <div
-                                className={cn(
-                                    'relative max-w-xl p-4 rounded-2xl shadow transition-all duration-200',
-                                    !isOwnMessage
-                                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none'
-                                    : 'bg-blue-600 text-white rounded-tr-none'
-                                )}
-                                >
-                                    {isOwnMessage && (
-                                        <button
-                                        onClick={() => deleteMessage(msg._id)}
-                                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow cursor-pointer"
-                                        title="Delete message"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
-
-                                    <p className="leading-relaxed break-words">{msg.text}</p>
-
-                                    <div
-                                        className={cn(
-                                        'text-xs mt-2 opacity-70',
-                                        !isOwnMessage ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'
-                                        )}
-                                    >
-                                        {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
-                                    </div>
-                                </div>
-                            </div>
-                            );
-                        })}
-                        {
-                            loadMssgs ?
-                            <h1 className='text-xl text-center mt-2'>Loading your messages...</h1>
-                            :null
-                        }
-                        <div ref={messagesEndRef} />
-                        </div>
-
-                        <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-white dark:bg-gray-900">
-                        <div className="flex gap-3 items-center">
-                            <Input
-                            placeholder="Type your message..."
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                            className="flex-1 rounded-full bg-gray-100 dark:bg-gray-800 border-none px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
-                            />
-                            <Button
-                            onClick={sendMessage}
-                            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition disabled:opacity-50"
-                            disabled={!newMessage.trim()}
-                            >
-                            <Send className="h-5 w-5" />
+                <div className="flex items-center space-x-4">
+                    <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">
+                        Features
+                    </a>
+                    <a href="#how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
+                        How It Works
+                    </a>
+                    
+                    <ModeToggle />
+                    
+                    {loading ? (
+                        <div className="w-24 h-10 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
+                    ) : isAuth && userData ? (
+                        <UpdateForm />
+                    ) : (
+                        <div className="flex items-center space-x-3">
+                            <Button variant="outline" size="sm">
+                                <Link to={'/login'}>
+                                    Sign In
+                                </Link>
+                            </Button>
+                            <Button size="sm">
+                                <Link to={'/register'}>
+                                    Get Started
+                                </Link>
                             </Button>
                         </div>
-                        </div>
-                    </>
                     )}
                 </div>
-            </div>
-        </>        
+            </nav>
+
+            <section className="container mx-auto px-6 py-20 flex flex-col md:flex-row items-center">
+                <div className="md:w-1/2 mb-10 md:mb-0">
+                    <h1 className="text-5xl font-bold leading-tight mb-6">
+                        Connect & Chat in <span className="text-primary">Real-Time</span>
+                    </h1>
+                    <p className="text-xl text-muted-foreground mb-8">
+                        A seamless chatting experience with customizable profiles, user search, and instant messaging.
+                    </p>
+                    <div className="flex space-x-4">
+                        <Button className="px-8 py-6 text-lg">
+                            <Link to={'/home'}>
+                                Start Chatting Now
+                            </Link>
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                        <Button variant="outline" className="px-8 py-6 text-lg">
+                        Learn More
+                        </Button>
+                    </div>
+                </div>
+                <div className="md:w-1/2 relative">
+                    <div className="bg-card rounded-2xl p-6 shadow-lg border">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center space-x-3">
+                                <Avatar>
+                                    <AvatarImage src="https://github.com/shadcn.png" />
+                                    <AvatarFallback>CN</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="font-medium">John Doe</p>
+                                    <p className="text-sm text-muted-foreground">last active less than 2mins</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="h-64 overflow-y-auto mb-4 space-y-4">
+                            <div className="flex justify-start">
+                                <div className="dark:bg-gray-800 bg-gray-100 rounded-2xl p-3 max-w-xs">
+                                    <p>Hey there! How are you doing?</p>
+                                    <p className="text-xs text-muted-foreground mt-1">2:30 PM</p>
+                                </div>
+                            </div>
+                            <div className="flex justify-end">
+                                <div className="bg-blue-600 dark:text-white text-primary-foreground rounded-2xl p-3 max-w-xs">
+                                    <p>I'm doing great! Just finished the new chat UI.</p>
+                                    <p className="text-xs mt-1">2:32 PM</p>
+                                </div>
+                            </div>
+                            <div className="flex justify-start">
+                                <div className="dark:bg-gray-800 bg-gray-100 rounded-2xl p-3 max-w-xs">
+                                    <p>That looks awesome! Can't wait to try it out.</p>
+                                    <p className="text-xs text-muted-foreground mt-1">2:33 PM</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center bg-muted rounded-full px-4 py-2">
+                            <input
+                                type="text"
+                                placeholder="Type a message..."
+                                className="flex-1 bg-transparent border-none focus:outline-none placeholder:text-muted-foreground"
+                            />
+                            <button className="text-primary hover:text-primary/80">
+                                <Send className="h-5 w-5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        <section id="features" className="container mx-auto px-6 py-20">
+                <h2 className="text-3xl font-bold text-center mb-16">Powerful Features</h2>
+                <div className="grid md:grid-cols-3 gap-10">
+                    <div className="bg-card rounded-xl p-8 border hover:border-primary transition-colors">
+                        <div className="bg-primary/10 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4 text-primary">
+                            <User className="h-6 w-6" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-3">Custom Profiles</h3>
+                        <p className="text-muted-foreground">
+                            Personalize your profile with a username, profile picture, and status.
+                        </p>
+                    </div>
+                    <div className="bg-card rounded-xl p-8 border hover:border-primary transition-colors">
+                        <div className="bg-primary/10 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4 text-primary">
+                            <Search className="h-6 w-6" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-3">User Search</h3>
+                        <p className="text-muted-foreground">
+                            Easily find and connect with other users through our search functionality.
+                        </p>
+                    </div>
+                    <div className="bg-card rounded-xl p-8 border hover:border-primary transition-colors">
+                        <div className="bg-primary/10 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4 text-primary">
+                            <MessageCircle className="h-6 w-6" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-3">Real-Time Chat</h3>
+                        <p className="text-muted-foreground">
+                            Instant messaging with read receipts and typing indicators.
+                        </p>
+                    </div>
+                </div>
+        </section>
+
+        <section id="how-it-works" className="container mx-auto px-6 py-20 bg-card rounded-3xl my-10">
+                <h2 className="text-3xl font-bold text-center mb-16">How It Works</h2>
+                <div className="grid md:grid-cols-3 gap-8">
+                    <div className="flex flex-col items-center text-center">
+                        <div className="bg-primary/10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 text-primary">
+                        1
+                        </div>
+                        <h3 className="text-xl font-semibold mb-3">Create Your Profile</h3>
+                        <p className="text-muted-foreground">
+                        Set up your account with a username and profile picture.
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                        <div className="bg-primary/10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 text-primary">
+                        2
+                        </div>
+                        <h3 className="text-xl font-semibold mb-3">Find Friends</h3>
+                        <p className="text-muted-foreground">
+                        Search for users and send them connection requests.
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                        <div className="bg-primary/10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 text-primary">
+                        3
+                        </div>
+                        <h3 className="text-xl font-semibold mb-3">Start Chatting</h3>
+                        <p className="text-muted-foreground">
+                        Click "Start Conversation" and begin your real-time chat.
+                        </p>
+                    </div>
+                </div>
+        </section>
+
+            <section className="container mx-auto px-6 py-20 text-center">
+                <h2 className="text-3xl font-bold mb-6">Ready to Connect?</h2>
+                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                    Join thousands of users already enjoying seamless real-time communication.
+                </p>
+                <Button className="px-10 py-7 text-lg">
+                    <Link to={'/home'}>
+                        Get Started for Free
+                    </Link>
+                </Button>
+            </section>
+
+            <footer className="border-t py-10">
+                <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                        <img src={appLogo} alt="App Logo" className="w-36 h-16 cursor-pointer" />
+                    </div>
+                    <div className="flex space-x-6">
+                        <a href="#" className="text-muted-foreground hover:text-foreground">Privacy</a>
+                        <a href="#" className="text-muted-foreground hover:text-foreground">Terms</a>
+                        <a href="#" className="text-muted-foreground hover:text-foreground">Contact</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
   );
 }
