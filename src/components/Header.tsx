@@ -37,13 +37,15 @@ export const Header = () => {
             <SearchInput />
 
             <div className="flex items-center space-x-4">
-                <UpdateForm />
-
+                
                 <ModeToggle />
                 
                 <Button variant="outline" size="icon" onClick={logoutFromApp}>
                     <LogOut />
                 </Button>
+                
+                <UpdateForm />
+
             </div>
         </header>
     );
