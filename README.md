@@ -1,4 +1,4 @@
-# Chat-text/text - Real-Time Chat Application
+# Real-Time Chat Application
 
 ![Screenshot from 2025-05-24 22-41-20](https://github.com/user-attachments/assets/de108f14-c778-401c-8ee1-2e45ac6fe4e9)
 
@@ -81,6 +81,4 @@ A modern real-time chat application built with React.js, TypeScript, Tailwind CS
 
 ## open your browser and type localhost:5173
 
-## Developer
-
-This app was developed with ❤️ by **sofyan**.  
+built with ❤️ by **soufian**.
